@@ -91,9 +91,18 @@ Do operation on all boards, otherwise will error if multiple boards are found.
         action='store_true',
         help='Get the primary video device path.')
     parser.add_argument(
+        '--get-uart-device',
+        action='store_true',
+        help='Get the UART device path.')
+    parser.add_argument(
         '--get-serial-device',
         action='store_true',
-        help='Get the serial device path.')
+        dest='get_uart_device',
+        help=argparse.SUPPRESS)
+    parser.add_argument(
+        '--get-prog-device',
+        action='store_true',
+        help='Get the programming device path.')
 
     parser.add_argument(
         '--prefer-hardware-serial',
@@ -371,7 +380,8 @@ def main():
         if not (args.get_usbfs or
                 args.get_sysfs or
                 args.get_video_device or
-                args.get_serial_device):
+                args.get_uart_device or
+                args.get_prog_device):
             print("Found %s boards." % len(found_boards))
             break
 
@@ -388,5 +398,8 @@ def main():
             assert board.state == "operational"
             print("???")
 
-        if args.get_serial_device:
+        if args.get_uart_device:
             print(board.tty()[0])
+
+        if args.get_prog_device:
+            print(board.tty())

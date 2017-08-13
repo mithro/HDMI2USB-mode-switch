@@ -50,10 +50,12 @@ def firmware_path(filepath):
 BOARD_TYPES = [
     'opsis',
     'atlys',
+    'mimasv2',
 ]
 BOARD_NAMES = {
     'atlys': "Digilent Atlys",
     'opsis': "Numato Opsis",
+    'mimasv2': "Numato Mimas V2",
 }
 BOARD_STATES = [
     'unconfigured',
@@ -65,6 +67,7 @@ BOARD_STATES = [
 BOARD_FPGA = {
     'atlys': "6slx45csg324",
     'opsis': "6slx45tfgg484",
+    'mimasv2': "6slx9csg324",
 }
 BOARD_FLASH_MAP = {
     # https://github.com/timvideos/HDMI2USB-litex-firmware/blob/master/targets/atlys/base.py#L205-L215
@@ -102,7 +105,23 @@ BoardBase = namedtuple("Board", ["dev", "type", "state"])
 
 class Board(BoardBase):
 
-    def tty(self):
+    def uart(self):
+        if self.type == 'atlys':
+            # Get the exart uart
+            return xxx
+        elif self.type == 'opsis':
+            return self.dev.tty()
+        elif self.type == 'mimasv2':
+            if self.state == '???':
+                return self.dev.tty()
+            else:
+                # Return the uart serial port
+                return X
+
+    def prog(self):
+        if self.type == 'mimasv2' and self.state == 'serial':
+            # Return the prog serial port
+            return X
         return self.dev.tty()
 
 
@@ -451,6 +470,16 @@ def find_boards(prefer_hardware_serial=True, verbose=False):
         elif device.vid == 0x2A19 and device.pid == 0x5442:
             all_boards.append(
                 Board(dev=device, type="opsis", state="operational"))
+
+        # The production Numato Mimas V2 board
+        elif device.vid == 0x2A19 and device.pid == 0x1002:
+            if len(device.tty()) == 1:
+                all_boards.append(
+                    Board(dev=device, type="mimasv2", state="???"))
+            else:
+                all_boards.append(
+                    Board(dev=device, type="mimasv2", state="serial"))
+            print(all_boards[-1])
 
         # ixo-usb-jtag
         # --------------------------
